@@ -7,7 +7,8 @@ Installation :
 
 Usage :
     python bridge.py COM3 115200 1
-    (port, baud_rate, sensor_id)
+    python bridge.py COM3 115200 1 http://localhost/jeu-buzzer/api_push.php
+    (port, baud_rate, sensor_id, url_optionnelle)
 """
 
 import serial
@@ -16,7 +17,7 @@ import time
 import sys
 import argparse
 
-API_URL = 'http://localhost/fin%20a1/api_push.php'
+DEFAULT_API_URL = 'http://localhost/fin%20a1/api_push.php'
 API_KEY = 'tiva_bridge_2024'
 
 
@@ -41,9 +42,11 @@ def main():
     parser.add_argument('port',      nargs='?', help='Port COM (ex: COM3)')
     parser.add_argument('baud_rate', nargs='?', type=int, default=115200, help='Vitesse (défaut: 115200)')
     parser.add_argument('sensor_id', nargs='?', type=int, default=1,      help='ID du capteur dans le dashboard (défaut: 1)')
+    parser.add_argument('api_url',   nargs='?', default=DEFAULT_API_URL,  help='URL de api_push.php (défaut: localhost/fin a1)')
     args = parser.parse_args()
 
-    port = args.port
+    port    = args.port
+    api_url = args.api_url
     if not port:
         port = find_tiva_port()
         if not port:
@@ -52,11 +55,11 @@ def main():
             sys.exit(1)
         print(f"Port détecté automatiquement : {port}")
 
-    baud   = args.baud_rate
-    sid    = args.sensor_id
+    baud = args.baud_rate
+    sid  = args.sensor_id
 
     print(f"Connexion à {port} — {baud} bps — capteur ID={sid}")
-    print(f"Envoi vers {API_URL}")
+    print(f"Envoi vers {api_url}")
     print("Ctrl+C pour arrêter.\n")
 
     try:
@@ -78,7 +81,7 @@ def main():
             print(f"RX  {line}")
 
             try:
-                resp = requests.post(API_URL, data={
+                resp = requests.post(api_url, data={
                     'key':       API_KEY,
                     'sensor_id': sid,
                     'data':      line,
