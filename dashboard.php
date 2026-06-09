@@ -334,23 +334,28 @@ foreach ($sensors as $s) {
                         <tr>
                             <th>#</th>
                             <th>Date / Heure</th>
+                            <th>État</th>
                             <th>Valeur brute</th>
-                            <th>Valeur numérique</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php foreach ($sensorData as $row): ?>
+                        <?php $val = $row['numeric_value']; ?>
                         <tr>
                             <td style="color:var(--text-muted);"><?= $row['id'] ?></td>
                             <td><?= date('d/m/Y H:i:s', strtotime($row['recorded_at'])) ?></td>
-                            <td><code><?= htmlspecialchars(substr($row['raw_value'], 0, 80)) ?></code></td>
                             <td>
-                                <?php if ($row['numeric_value'] !== null): ?>
-                                    <span class="badge badge-purple"><?= $row['numeric_value'] ?></span>
-                                <?php else: ?>
+                                <?php if ($val === null): ?>
                                     <span style="color:var(--text-muted);">—</span>
+                                <?php elseif ((float)$val === 1.0): ?>
+                                    <span class="badge badge-green">&#9679; Appuyé (1)</span>
+                                <?php elseif ((float)$val === 0.0): ?>
+                                    <span class="badge badge-gray">&#9675; Relâché (0)</span>
+                                <?php else: ?>
+                                    <span class="badge badge-purple"><?= $val ?></span>
                                 <?php endif; ?>
                             </td>
+                            <td><code><?= htmlspecialchars(substr($row['raw_value'], 0, 80)) ?></code></td>
                         </tr>
                         <?php endforeach; ?>
                         <?php if (!$sensorData): ?>
