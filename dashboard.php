@@ -7,44 +7,63 @@ require_once 'includes/config.php';
 $pdo = getDB();
 
 // ── Handle POST actions ──
-$flash = '';
+$flash     = '';
 $flashType = 'success';
+
+// Lire le flash depuis la session (après redirect)
+if (!empty($_SESSION['flash'])) {
+    $flash     = $_SESSION['flash'];
+    $flashType = $_SESSION['flash_type'] ?? 'success';
+    unset($_SESSION['flash'], $_SESSION['flash_type']);
+}
+
+function redirectWithFlash(string $tab, string $msg, string $type = 'success'): never {
+    $_SESSION['flash']      = $msg;
+    $_SESSION['flash_type'] = $type;
+    header('Location: dashboard.php#' . $tab);
+    exit;
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
 
     if ($action === 'add_sensor') {
-        $name     = trim($_POST['name'] ?? '');
-        $port     = trim($_POST['port'] ?? '');
-        $baud     = (int)($_POST['baud_rate'] ?? 9600);
-        $desc     = trim($_POST['description'] ?? '');
+        $name = trim($_POST['name'] ?? '');
+        $port = trim($_POST['port'] ?? '');
+        $baud = (int)($_POST['baud_rate'] ?? 9600);
+        $desc = trim($_POST['description'] ?? '');
 
         if ($name && $port) {
             $pdo->prepare('INSERT INTO sensors (name, port, baud_rate, description) VALUES (?,?,?,?)')
                 ->execute([$name, $port, $baud, $desc]);
-            $flash = "Capteur \"$name\" ajouté avec succès.";
+            redirectWithFlash('sensors', "Capteur \"$name\" ajouté avec succès.");
         } else {
-            $flash = 'Nom et port sont obligatoires.';
-            $flashType = 'error';
+            redirectWithFlash('sensors', 'Nom et port sont obligatoires.', 'error');
         }
     }
 
     if ($action === 'delete_sensor') {
         $id = (int)($_POST['sensor_id'] ?? 0);
         $pdo->prepare('DELETE FROM sensors WHERE id = ?')->execute([$id]);
-        $flash = 'Capteur supprimé.';
+        redirectWithFlash('sensors', 'Capteur supprimé.');
     }
 
     if ($action === 'toggle_sensor') {
         $id = (int)($_POST['sensor_id'] ?? 0);
         $pdo->prepare('UPDATE sensors SET active = NOT active WHERE id = ?')->execute([$id]);
-        $flash = 'Statut mis à jour.';
+        redirectWithFlash('sensors', 'Statut mis à jour.');
     }
 
     if ($action === 'delete_data') {
         $sid = (int)($_POST['sensor_id'] ?? 0);
         $pdo->prepare('DELETE FROM sensor_data WHERE sensor_id = ?')->execute([$sid]);
-        $flash = 'Historique effacé.';
+        redirectWithFlash('data', 'Historique effacé.');
+    }
+
+    if ($action === 'delete_all_sensors') {
+        $pdo->exec('DELETE FROM sensor_data');
+        $pdo->exec('DELETE FROM sensors');
+        redirectWithFlash('sensors', 'Tous les capteurs et leurs données ont été supprimés.');
     }
 }
 
@@ -205,9 +224,15 @@ foreach ($sensors as $s) {
         <div id="tab-sensors" class="tab-panel">
             <div class="page-header">
                 <h1>Gestion des capteurs</h1>
-                <button class="btn btn-primary" onclick="openModal('modal-add')">
-                    &#43; Ajouter un capteur
-                </button>
+                <div style="display:flex;gap:0.75rem;">
+                    <form method="POST" onsubmit="return confirm('Supprimer TOUS les capteurs et toutes leurs données ?');">
+                        <input type="hidden" name="action" value="delete_all_sensors">
+                        <button type="submit" class="btn btn-danger">&#128465; Tout vider</button>
+                    </form>
+                    <button class="btn btn-primary" onclick="openModal('modal-add')">
+                        &#43; Ajouter un capteur
+                    </button>
+                </div>
             </div>
 
             <div class="table-wrap">
@@ -587,7 +612,10 @@ function clearConsole() {
 const hash = window.location.hash.replace('#','');
 if (['overview','sensors','data','serial'].includes(hash)) {
     document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.sidebar-item').forEach(b => b.classList.remove('active'));
     document.getElementById('tab-' + hash)?.classList.add('active');
+    const idx = ['overview','sensors','data','serial'].indexOf(hash);
+    document.querySelectorAll('.sidebar-item')[idx]?.classList.add('active');
 }
 </script>
 
