@@ -42,6 +42,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
+    if ($action === 'edit_sensor') {
+        $id   = (int)($_POST['sensor_id'] ?? 0);
+        $name = trim($_POST['name'] ?? '');
+        $port = trim($_POST['port'] ?? '');
+        $baud = (int)($_POST['baud_rate'] ?? 9600);
+        $desc = trim($_POST['description'] ?? '');
+
+        if ($name && $port) {
+            $pdo->prepare('UPDATE sensors SET name=?, port=?, baud_rate=?, description=? WHERE id=?')
+                ->execute([$name, $port, $baud, $desc, $id]);
+            redirectWithFlash('sensors', "Capteur \"$name\" modifié avec succès.");
+        } else {
+            redirectWithFlash('sensors', 'Nom et port sont obligatoires.', 'error');
+        }
+    }
+
     if ($action === 'delete_sensor') {
         $id = (int)($_POST['sensor_id'] ?? 0);
         $pdo->prepare('DELETE FROM sensors WHERE id = ?')->execute([$id]);
@@ -151,6 +167,16 @@ foreach ($sensors as $s) {
                     Mis à jour : <?= date('d/m/Y H:i:s') ?>
                 </span>
             </div>
+
+            <?php if ($sensors): ?>
+            <div class="chart-wrap" style="text-align:center;">
+                <h3>&#128226; État en direct — <?= htmlspecialchars($sensors[0]['name']) ?></h3>
+                <div id="liveState" style="font-size:3rem; font-weight:bold; margin:1rem 0; color:var(--text-muted);">
+                    Chargement...
+                </div>
+                <div id="liveStateTime" style="color:var(--text-muted); font-size:0.85rem;"></div>
+            </div>
+            <?php endif; ?>
 
             <div class="stats-grid">
                 <div class="stat-card">
@@ -275,6 +301,10 @@ foreach ($sensors as $s) {
                                     <a href="?sensor=<?= $s['id'] ?>" onclick="showTab('serial')" class="btn btn-success" style="padding:0.35rem 0.7rem;font-size:0.75rem;">
                                         &#128268; Lire
                                     </a>
+                                    <button type="button" class="btn btn-outline" style="padding:0.35rem 0.7rem;font-size:0.75rem;"
+                                        onclick='openEditModal(<?= json_encode($s) ?>)'>
+                                        &#9999; Modifier
+                                    </button>
                                     <form method="POST" onsubmit="return confirm('Supprimer ce capteur et toutes ses données ?');">
                                         <input type="hidden" name="action" value="delete_sensor">
                                         <input type="hidden" name="sensor_id" value="<?= $s['id'] ?>">
@@ -456,6 +486,54 @@ foreach ($sensors as $s) {
     </div>
 </div>
 
+<!-- ── MODAL: Edit Sensor ── -->
+<div class="modal-overlay" id="modal-edit">
+    <div class="modal">
+        <h2>&#9999; Modifier le capteur</h2>
+        <form method="POST" action="dashboard.php">
+            <input type="hidden" name="action" value="edit_sensor">
+            <input type="hidden" name="sensor_id" id="edit-id">
+            <div class="form-group">
+                <label>Nom du capteur *</label>
+                <input type="text" name="name" id="edit-name" required>
+            </div>
+            <div class="form-group">
+                <label>Port série *</label>
+                <input type="text" name="port" id="edit-port" required>
+            </div>
+            <div class="form-group">
+                <label>Baud rate</label>
+                <select name="baud_rate" id="edit-baud">
+                    <option value="9600">9600</option>
+                    <option value="19200">19200</option>
+                    <option value="38400">38400</option>
+                    <option value="57600">57600</option>
+                    <option value="115200">115200</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Description</label>
+                <textarea name="description" id="edit-desc"></textarea>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-outline" onclick="closeModal('modal-edit')">Annuler</button>
+                <button type="submit" class="btn btn-primary">Enregistrer</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function openEditModal(sensor) {
+    document.getElementById('edit-id').value   = sensor.id;
+    document.getElementById('edit-name').value = sensor.name;
+    document.getElementById('edit-port').value = sensor.port;
+    document.getElementById('edit-baud').value = sensor.baud_rate;
+    document.getElementById('edit-desc').value = sensor.description || '';
+    openModal('modal-edit');
+}
+</script>
+
 <script>
 // ── Tab navigation ──
 function showTab(name) {
@@ -471,6 +549,48 @@ function closeModal(id) { document.getElementById(id).classList.remove('open'); 
 document.querySelectorAll('.modal-overlay').forEach(o =>
     o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); })
 );
+
+// ── État en direct (polling) ──
+(function () {
+    const el = document.getElementById('liveState');
+    if (!el) return;
+    const timeEl = document.getElementById('liveStateTime');
+    const sensorId = <?= (int)($sensors[0]['id'] ?? 0) ?>;
+
+    function pollLiveState() {
+        fetch('serial_read.php?sensor_id=' + sensorId + '&cache=' + Date.now())
+            .then(r => r.json())
+            .then(data => {
+                if (data.error) {
+                    el.textContent = 'Erreur';
+                    el.style.color = 'var(--text-muted)';
+                    return;
+                }
+                if (data.numeric === null || data.numeric === undefined) {
+                    el.textContent = 'En attente de données...';
+                    el.style.color = 'var(--text-muted)';
+                    return;
+                }
+                if (Number(data.numeric) === 1) {
+                    el.textContent = '\u{1F534} APPUYÉ';
+                    el.style.color = '#00d4aa';
+                } else {
+                    el.textContent = '⚪ RELÂCHÉ';
+                    el.style.color = '#8892a4';
+                }
+                if (data.recorded_at) {
+                    timeEl.textContent = 'Dernier changement : ' + data.recorded_at;
+                }
+            })
+            .catch(() => {
+                el.textContent = 'Erreur réseau';
+                el.style.color = 'var(--text-muted)';
+            });
+    }
+
+    pollLiveState();
+    setInterval(pollLiveState, 1000);
+})();
 
 // ── Overview chart ──
 (function () {

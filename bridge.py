@@ -40,7 +40,7 @@ def find_tiva_port():
 def main():
     parser = argparse.ArgumentParser(description='Pont Tiva C → SensorHub')
     parser.add_argument('port',      nargs='?', help='Port COM (ex: COM3)')
-    parser.add_argument('baud_rate', nargs='?', type=int, default=115200, help='Vitesse (défaut: 115200)')
+    parser.add_argument('baud_rate', nargs='?', type=int, default=9600, help='Vitesse (défaut: 9600)')
     parser.add_argument('sensor_id', nargs='?', type=int, default=1,      help='ID du capteur dans le dashboard (défaut: 1)')
     parser.add_argument('api_url',   nargs='?', default=DEFAULT_API_URL,  help='URL de api_push.php (défaut: localhost/fin a1)')
     args = parser.parse_args()
