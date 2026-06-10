@@ -54,6 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <nav class="navbar-links">
         <a href="accueil.php">Accueil</a>
         <a href="index.php">État du bouton</a>
+        <a href="inscription.php">Inscription</a>
         <a href="connexion.php" class="btn-link active">Connexion</a>
     </nav>
 </header>
@@ -73,6 +74,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <input type="password" id="password" name="password" required>
 
         <button type="submit">Se connecter</button>
+
+        <span class="form-hint">Pas encore de compte ? <a href="inscription.php">Inscrivez-vous</a></span>
 
         <a href="accueil.php" class="back-link">&larr; Retour à l'accueil</a>
     </form>

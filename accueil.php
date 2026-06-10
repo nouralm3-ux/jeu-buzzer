@@ -18,9 +18,11 @@ $loggedIn = isset($_SESSION['username']);
         <a href="accueil.php" class="active">Accueil</a>
         <a href="index.php">État du bouton</a>
         <?php if ($loggedIn): ?>
+            <a href="bridge.php">Pont série</a>
             <span class="navbar-user">Bonjour, <?= htmlspecialchars($_SESSION['username']) ?></span>
             <a href="deconnexion.php" class="btn-link">Déconnexion</a>
         <?php else: ?>
+            <a href="inscription.php">Inscription</a>
             <a href="connexion.php" class="btn-link">Connexion</a>
         <?php endif; ?>
     </nav>
@@ -39,6 +41,11 @@ $loggedIn = isset($_SESSION['username']);
         </a>
 
         <?php if ($loggedIn): ?>
+            <a href="bridge.php" class="card">
+                <h2>Pont série</h2>
+                <p>Démarrez ou arrêtez le pont série qui relie le capteur à la base de données.</p>
+            </a>
+
             <a href="deconnexion.php" class="card">
                 <h2>Mon compte</h2>
                 <p>Connecté en tant que <?= htmlspecialchars($_SESSION['username']) ?>. Cliquez ici pour vous déconnecter.</p>
@@ -47,6 +54,11 @@ $loggedIn = isset($_SESSION['username']);
             <a href="connexion.php" class="card">
                 <h2>Connexion</h2>
                 <p>Accédez à votre espace administrateur.</p>
+            </a>
+
+            <a href="inscription.php" class="card">
+                <h2>Inscription</h2>
+                <p>Créez un compte pour accéder à votre espace administrateur.</p>
             </a>
         <?php endif; ?>
     </section>
