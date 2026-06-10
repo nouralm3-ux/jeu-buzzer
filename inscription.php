@@ -65,16 +65,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TIVA - Inscription</title>
+    <title>It's buzzing time - Inscription</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <header class="navbar">
-    <div class="navbar-brand">TIVA</div>
+    <div class="navbar-brand">It's buzzing time</div>
     <nav class="navbar-links">
         <a href="accueil.php">Accueil</a>
-        <a href="index.php">État du bouton</a>
+        <a href="index.php">État du buzzer</a>
         <a href="inscription.php" class="active">Inscription</a>
         <a href="connexion.php" class="btn-link">Connexion</a>
     </nav>

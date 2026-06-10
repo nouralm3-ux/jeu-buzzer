@@ -7,18 +7,17 @@ $loggedIn = isset($_SESSION['username']);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TIVA - Accueil</title>
+    <title>It's buzzing time - Accueil</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <header class="navbar">
-    <div class="navbar-brand">TIVA</div>
+    <div class="navbar-brand">It's buzzing time</div>
     <nav class="navbar-links">
         <a href="accueil.php" class="active">Accueil</a>
-        <a href="index.php">État du bouton</a>
+        <a href="index.php">État du buzzer</a>
         <?php if ($loggedIn): ?>
-            <a href="bridge.php">Pont série</a>
             <span class="navbar-user">Bonjour, <?= htmlspecialchars($_SESSION['username']) ?></span>
             <a href="deconnexion.php" class="btn-link">Déconnexion</a>
         <?php else: ?>
@@ -30,21 +29,17 @@ $loggedIn = isset($_SESSION['username']);
 
 <main>
     <section class="hero">
-        <h1>Bienvenue sur TIVA</h1>
-        <p>Système de surveillance en temps réel de l'état du hangar.</p>
+        <h1>Bienvenue sur It's buzzing time</h1>
+        <p>Le site vous permettant de connaître en temps réel l'état de votre buzzer !</p>
     </section>
 
     <section class="cards">
         <a href="index.php" class="card">
-            <h2>État du bouton</h2>
-            <p>Consultez en direct l'état actuel du capteur connecté au hangar.</p>
+            <h2>État du buzzer</h2>
+            <p>Consultez en direct l'état actuel du buzzer.</p>
         </a>
 
         <?php if ($loggedIn): ?>
-            <a href="bridge.php" class="card">
-                <h2>Pont série</h2>
-                <p>Démarrez ou arrêtez le pont série qui relie le capteur à la base de données.</p>
-            </a>
 
             <a href="deconnexion.php" class="card">
                 <h2>Mon compte</h2>
@@ -65,7 +60,7 @@ $loggedIn = isset($_SESSION['username']);
 </main>
 
 <footer class="footer">
-    <p>&copy; <?= date('Y') ?> TIVA</p>
+    <p>&copy; <?= date('Y') ?> It's buzzing time</p>
 </footer>
 
 </body>

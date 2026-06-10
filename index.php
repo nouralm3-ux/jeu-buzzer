@@ -7,18 +7,17 @@ $loggedIn = isset($_SESSION['username']);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TIVA - État du bouton</title>
+    <title>It's buzzing time - État du buzzer</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
 <header class="navbar">
-    <div class="navbar-brand">TIVA</div>
+    <div class="navbar-brand">It's buzzing time</div>
     <nav class="navbar-links">
         <a href="accueil.php">Accueil</a>
-        <a href="index.php" class="active">État du bouton</a>
+        <a href="index.php" class="active">État du buzzer</a>
         <?php if ($loggedIn): ?>
-            <a href="bridge.php">Pont série</a>
             <span class="navbar-user">Bonjour, <?= htmlspecialchars($_SESSION['username']) ?></span>
             <a href="deconnexion.php" class="btn-link">Déconnexion</a>
         <?php else: ?>
@@ -30,7 +29,7 @@ $loggedIn = isset($_SESSION['username']);
 
 <main>
     <section class="status-section">
-        <h1>État du bouton</h1>
+        <h1>État du buzzer</h1>
 
         <div id="status-card" class="status-card">
             <div class="status-indicator" id="status-indicator"></div>
@@ -42,7 +41,7 @@ $loggedIn = isset($_SESSION['username']);
 </main>
 
 <footer class="footer">
-    <p>&copy; <?= date('Y') ?> TIVA</p>
+    <p>&copy; <?= date('Y') ?> It's buzzing time</p>
 </footer>
 
 <script>
